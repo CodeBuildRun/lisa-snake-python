@@ -3,7 +3,7 @@ import os
 import random
 import bottle
 
-from api import ping_response, start_response, move_response, end_response
+from .api import ping_response, start_response, move_response, end_response
 
 
 @bottle.route('/')
@@ -61,8 +61,44 @@ def move():
     print(json.dumps(data))
 
     directions = ['up', 'down', 'left', 'right']
-    direction = random.choice(directions)
+   # direction = random.choice(directions)
+    
 
+    #Make a list of all the bad coordinates and try to avoid them
+    height=data["board"]["height"]
+    width=data["board"]["height"]
+    badCoords=[]
+
+    #Perimeter coordinates just outside the board
+    #bad coordinates above and below the board
+    for x in range(width):
+        bad=(x, -1)
+        badCoords.append(bad)
+        bad=(x, height)
+        badCoords.append(bad)
+    #bad coordinates to the left and right the board
+    for y in range(height):
+        bad=(-1, y)
+        badCoords.append(bad)
+        bad=(width,y)
+        badCoords.append(bad)
+
+    possibleMoves = []
+
+    #get coordinates of our snake head
+    myHead = data ["you"]["body"][0]
+
+
+    #up
+    coord=(myHead["x"], myHead["y"]-1)
+    if coord not in badCoords:
+        possibleMoves.append("up")
+        direction = random.choice(possibleMoves)
+    else:
+        direction = random.choice(["left", "right"])
+
+
+     
     return move_response(direction)
 
 
@@ -82,10 +118,13 @@ def end():
 # Expose WSGI app (so gunicorn can find it)
 application = bottle.default_app()
 
-if __name__ == '__main__':
+def main():
     bottle.run(
         application,
         host=os.getenv('IP', '0.0.0.0'),
         port=os.getenv('PORT', '8080'),
         debug=os.getenv('DEBUG', True)
     )
+
+if __name__ == '__main__':
+    main()
