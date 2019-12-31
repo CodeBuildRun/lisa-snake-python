@@ -60,45 +60,40 @@ def move():
     """
     print(json.dumps(data))
 
-    directions = ['up', 'down', 'left', 'right']
-   # direction = random.choice(directions)
-    
+    # directions = ['up', 'down', 'left', 'right']
 
-    #Make a list of all the bad coordinates and try to avoid them
-    height=data["board"]["height"]
-    width=data["board"]["height"]
-    badCoords=[]
+    # Make a list of all the bad coordinates and try to avoid them
+    height = data["board"]["height"]
+    width = data["board"]["height"]
+    badCoords = []
 
-    #Perimeter coordinates just outside the board
-    #bad coordinates above and below the board
+    # Perimeter coordinates just outside the board
+    # bad coordinates above and below the board
     for x in range(width):
-        bad=(x, -1)
+        bad = (x, -1)
         badCoords.append(bad)
-        bad=(x, height)
+        bad = (x, height)
         badCoords.append(bad)
-    #bad coordinates to the left and right the board
+    # bad coordinates to the left and right the board
     for y in range(height):
-        bad=(-1, y)
+        bad = (-1, y)
         badCoords.append(bad)
-        bad=(width,y)
+        bad = (width, y)
         badCoords.append(bad)
 
     possibleMoves = []
 
-    #get coordinates of our snake head
-    myHead = data ["you"]["body"][0]
+    # get coordinates of our snake head
+    myHead = data["you"]["body"][0]
 
-
-    #up
-    coord=(myHead["x"], myHead["y"]-1)
+    # up
+    coord = (myHead["x"], myHead["y"]-1)
     if coord not in badCoords:
         possibleMoves.append("up")
         direction = random.choice(possibleMoves)
     else:
         direction = random.choice(["left", "right"])
 
-
-     
     return move_response(direction)
 
 
@@ -118,6 +113,7 @@ def end():
 # Expose WSGI app (so gunicorn can find it)
 application = bottle.default_app()
 
+
 def main():
     bottle.run(
         application,
@@ -125,6 +121,7 @@ def main():
         port=os.getenv('PORT', '8080'),
         debug=os.getenv('DEBUG', True)
     )
+
 
 if __name__ == '__main__':
     main()
