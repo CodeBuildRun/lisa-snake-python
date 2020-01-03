@@ -61,61 +61,58 @@ def move():
     print(json.dumps(data))
 
     directions = ['up', 'down', 'left', 'right']
-   # direction = random.choice(directions)
-    
+    # direction = random.choice(directions)
+    # Make a list of all the bad coordinates and try to avoid them
+    height = data["board"]["height"]
+    width = data["board"]["width"]
+    badCoords = []
 
-    #Make a list of all the bad coordinates and try to avoid them
-    height=data["board"]["height"]
-    width=data["board"]["width"]
-    badCoords=[]
-
-    #Bad coordinates that my snake needs to avoid
-   	#1. above and below the board
+    # Bad coordinates that my snake needs to avoid
+    # 1. above and below the board
     for x in range(width):
-        bad=(x, -1)
+        bad = (x, -1)
         badCoords.append(bad)
-        bad=(x, height)
+        bad = (x, height)
         badCoords.append(bad)
-    #2. left and right to the board
+    # 2. left and right to the board
     for y in range(height):
-        bad=(-1, y)
+        bad = (-1, y)
         badCoords.append(bad)
-        bad=(width,y)
+        bad = (width, y)
         badCoords.append(bad)
-    #3. snake bodies on the board
+    # 3. snake bodies on the board
     for snake in data["board"]["snakes"]:
         for body in snake["body"]:
             bad = (body["x"], body["y"])
             badCoords.append(bad)
     possibleMoves = []
 
-    #get coordinates of my snake head
-    myHead = data ["you"]["body"][0]
-   
-    
-    #up
-    coord=(myHead["x"], myHead["y"]-1)
-    if coord not in badCoords:
-	    possibleMoves.append("up")
-    #down
-    coord=(myHead["x"], myHead["y"]+1)
-    if coord not in badCoords:
-	    possibleMoves.append("down")
-	#left
-    coord=(myHead["x"]-1, myHead["y"])
-    if coord not in badCoords:
-	    possibleMoves.append("left")
-	#right
-    coord=(myHead["x"]+1, myHead["y"])
-    if coord not in badCoords:
-	    possibleMoves.append("right")
+    # get coordinates of my snake head
+    myHead = data["you"]["body"][0]
 
-    #possible moves
-    if len(possibleMoves)>0:
-	    direction=random.choice(possibleMoves)
+    # up
+    coord = (myHead["x"], myHead["y"]-1)
+    if coord not in badCoords:
+        possibleMoves.append("up")
+    # down
+    coord = (myHead["x"], myHead["y"]+1)
+    if coord not in badCoords:
+        possibleMoves.append("down")
+    # left
+    coord = (myHead["x"]-1, myHead["y"])
+    if coord not in badCoords:
+        possibleMoves.append("left")
+    # right
+    coord = (myHead["x"]+1, myHead["y"])
+    if coord not in badCoords:
+        possibleMoves.append("right")
+
+    # possible moves
+    if len(possibleMoves) > 0:
+        direction = random.choice(possibleMoves)
     else:
-        direction=random.choice(directions)
-     
+        direction = random.choice(directions)
+
     return move_response(direction)
 
 
@@ -135,6 +132,7 @@ def end():
 # Expose WSGI app (so gunicorn can find it)
 application = bottle.default_app()
 
+
 def main():
     bottle.run(
         application,
@@ -142,6 +140,7 @@ def main():
         port=os.getenv('PORT', '8080'),
         debug=os.getenv('DEBUG', True)
     )
+
 
 if __name__ == '__main__':
     main()
