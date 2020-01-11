@@ -59,3 +59,7 @@ or visit [http://APP_NAME.herokuapp.com](http://APP_NAME.herokuapp.com).
 heroku logs --tail
 ```
 
+## Tools
+[SonarQube](https://sonarcloud.io/dashboard?id=CodeBuildRun_lisa-snake-python)
+
+[Circle CI](https://circleci.com/gh/CodeBuildRun/lisa-snake-python) 
