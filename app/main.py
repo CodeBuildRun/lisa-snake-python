@@ -65,51 +65,51 @@ def move():
     # Make a list of all the bad coordinates and try to avoid them
     height = data["board"]["height"]
     width = data["board"]["width"]
-    badCoords = []
+    bad_coords = []
 
     # Bad coordinates that my snake needs to avoid
     # 1. above and below the board
     for x in range(width):
         bad = (x, -1)
-        badCoords.append(bad)
+        bad_coords.append(bad)
         bad = (x, height)
-        badCoords.append(bad)
+        bad_coords.append(bad)
     # 2. left and right to the board
     for y in range(height):
         bad = (-1, y)
-        badCoords.append(bad)
+        bad_coords.append(bad)
         bad = (width, y)
-        badCoords.append(bad)
+        bad_coords.append(bad)
     # 3. snake bodies on the board
     for snake in data["board"]["snakes"]:
         for body in snake["body"]:
             bad = (body["x"], body["y"])
-            badCoords.append(bad)
-    possibleMoves = []
+            bad_coords.append(bad)
+    possible_moves = []
 
     # get coordinates of my snake head
-    myHead = data["you"]["body"][0]
+    my_head = data["you"]["body"][0]
 
     # up
-    coord = (myHead["x"], myHead["y"]-1)
-    if coord not in badCoords:
-        possibleMoves.append("up")
+    coord = (my_head["x"], my_head["y"]-1)
+    if coord not in bad_coords:
+        possible_moves.append("up")
     # down
-    coord = (myHead["x"], myHead["y"]+1)
-    if coord not in badCoords:
-        possibleMoves.append("down")
+    coord = (my_head["x"], my_head["y"]+1)
+    if coord not in bad_coords:
+        possible_moves.append("down")
     # left
-    coord = (myHead["x"]-1, myHead["y"])
-    if coord not in badCoords:
-        possibleMoves.append("left")
+    coord = (my_head["x"]-1, my_head["y"])
+    if coord not in bad_coords:
+        possible_moves.append("left")
     # right
-    coord = (myHead["x"]+1, myHead["y"])
-    if coord not in badCoords:
-        possibleMoves.append("right")
+    coord = (my_head["x"]+1, my_head["y"])
+    if coord not in bad_coords:
+        possible_moves.append("right")
 
     # possible moves
-    if len(possibleMoves) > 0:
-        direction = random.choice(possibleMoves)
+    if len(possible_moves) > 0:
+        direction = random.choice(possible_moves)
     else:
         direction = random.choice(directions)
 
