@@ -10,7 +10,7 @@ This AI client uses the [bottle web framework](http://bottlepy.org/docs/dev/inde
 
 #### You will need...
 
-* a working Python 2.7 or 3.x development environment ([getting started guide](http://hackercodex.com/guide/python-development-environment-on-mac-osx/))
+* a working Python 3.x development environment ([getting started guide](http://hackercodex.com/guide/python-development-environment-on-mac-osx/))
 * experience [deploying Python apps to Heroku](https://devcenter.heroku.com/articles/getting-started-with-python#introduction)
 * [pip](https://pip.pypa.io/en/latest/installing.html) to install Python dependencies
 
@@ -28,7 +28,7 @@ pip install -r requirements.txt
 
 3) Run local server:
 ```
-python app/main.py
+python run.py
 ```
 
 4) Test your snake by sending a curl to the running snake
@@ -58,4 +58,9 @@ or visit [http://APP_NAME.herokuapp.com](http://APP_NAME.herokuapp.com).
 ```
 heroku logs --tail
 ```
+
+## Tools
+[SonarQube](https://sonarcloud.io/dashboard?id=CodeBuildRun_lisa-snake-python)
+
+[Circle CI](https://circleci.com/gh/CodeBuildRun/lisa-snake-python) 
 
