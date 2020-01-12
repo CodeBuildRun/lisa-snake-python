@@ -5,6 +5,7 @@ from .api import ping_response, start_response, move_response, end_response
 from .snake import Snake
 
 
+
 @bottle.route('/')
 def index():
     return '''
