@@ -1,4 +1,3 @@
-import json
 import os
 import bottle
 
@@ -53,8 +52,6 @@ def move():
     Using the data from the endpoint request object, the
     snake AI must choose a direction to move in.
     """
-    print(json.dumps(data))
-
     direction = snake.move(data)
     return move_response(direction)
 
