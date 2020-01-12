@@ -1,5 +1,6 @@
 import json
 from bottle import HTTPResponse
+from .snake import Moves
 
 
 def ping_response():
@@ -24,7 +25,7 @@ def start_response(color):
 
 
 def move_response(move):
-    assert move in ['up', 'down', 'left', 'right'], \
+    assert isinstance(move, Moves), \
         "Move must be one of [up, down, left, right]"
 
     return HTTPResponse(
@@ -33,7 +34,7 @@ def move_response(move):
             "Content-Type": "application/json"
         },
         body=json.dumps({
-            "move": move
+            "move": move.value
         })
     )
 
