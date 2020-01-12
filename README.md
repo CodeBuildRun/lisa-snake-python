@@ -1,3 +1,5 @@
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=CodeBuildRun_lisa-snake-python&metric=alert_status)](https://sonarcloud.io/dashboard?id=CodeBuildRun_lisa-snake-python)
+
 # lisa-snake-python
 
 A simple [Battlesnake AI](http://battlesnake.io) written in Python. 
