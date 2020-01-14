@@ -102,24 +102,20 @@ class Snake:
         # Determine direction of movement
         # up
         coord = (my_head[0], my_head[1] - 1)
-        if self.is_coord_on_board(coord):
-            if coord not in bad_coords:
-                possible_moves.append(Moves.UP)
+        if (self.is_coord_on_board(coord)) and (coord not in bad_coords):
+            possible_moves.append(Moves.UP)
         # down
         coord = (my_head[0], my_head[1] + 1)
-        if self.is_coord_on_board(coord):
-            if coord not in bad_coords:
-                possible_moves.append(Moves.DOWN)
+        if (self.is_coord_on_board(coord)) and (coord not in bad_coords):
+            possible_moves.append(Moves.DOWN)
         # left
         coord = (my_head[0] - 1, my_head[1])
-        if self.is_coord_on_board(coord):
-            if coord not in bad_coords:
-                possible_moves.append(Moves.LEFT)
+        if (self.is_coord_on_board(coord)) and (coord not in bad_coords):
+            possible_moves.append(Moves.LEFT)
         # right
         coord = (my_head[0] + 1, my_head[1])
-        if self.is_coord_on_board(coord):
-            if coord not in bad_coords:
-                possible_moves.append(Moves.RIGHT)
+        if (self.is_coord_on_board(coord)) and (coord not in bad_coords):
+            possible_moves.append(Moves.RIGHT)
 
         # possible moves
         if len(possible_moves) > 0:
