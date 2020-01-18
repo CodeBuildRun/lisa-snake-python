@@ -2,3 +2,4 @@ bottle
 gunicorn
 flake8
 pylint
+pathfinding
