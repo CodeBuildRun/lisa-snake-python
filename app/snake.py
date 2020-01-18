@@ -1,4 +1,3 @@
-import json
 import random
 from enum import Enum
 from pathfinding.core.grid import Grid
