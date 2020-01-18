@@ -1,6 +1,8 @@
 import json
 import random
 from enum import Enum
+from pathfinding.core.grid import Grid
+from pathfinding.finder.a_star import AStarFinder
 
 
 class Moves(Enum):
@@ -19,6 +21,7 @@ class Snake:
         Snake Constructor
         Initializes stateful snake
         """
+        self.finder = AStarFinder()
 
     def initialize(self, data):
         """
@@ -40,15 +43,28 @@ class Snake:
 
         # Get the board's current state
         game_board = data["board"]
-
-        # Make a list of all the board locations to avoid
-        bad_coords = self.get_bad_coords(game_board)
+        # create a grid representation of the board
+        grid = self.build_grid(game_board)
 
         # get coordinates of my snake head
         my_head = self.get_snake_head(data)
+        start_loc = grid.node(my_head[0], my_head[1])
+
+        # chose a target
+        for tries in range(4):
+            target = self.chose_target(data)
+            end_loc = grid.node(target[0], target[1])
+            print(target)
+
+            # find a path to the target
+            path = self.finder.find_path(start_loc, end_loc, grid)
+            if len(path[0]) >= 2:
+                break
+            else:
+                print("No PATH")
 
         # Determine direction of movement
-        direction = self.chose_direction(my_head, bad_coords)
+        direction = self.chose_direction(my_head, path)
         return direction
 
     def get_snake_head(self, data):
@@ -59,19 +75,13 @@ class Snake:
         my_head = (my_head_json["x"], my_head_json["y"])
         return my_head
 
-    def get_bad_coords(self, game_board):
+    def set_bad_coords(self, game_board, matrix):
         """
-        Make a list of all the coordinates to avoid
+        Mark cells in the matrix that the snake needs to avoid
         """
-        bad_coords = []
-
-        # Bad coordinates that my snake needs to avoid
-        # 1. snake bodies on the board
         for snake in game_board["snakes"]:
-            for body in snake["body"]:
-                bad = (body["x"], body["y"])
-                bad_coords.append(bad)
-        return bad_coords
+            for body_part in snake["body"]:
+                matrix[body_part["y"]][body_part["x"]] = 0
 
     def is_coord_on_board(self, coord):
         """
@@ -86,41 +96,56 @@ class Snake:
 
         return on_board
 
-    def chose_direction(self, my_head, bad_coords):
+    def build_grid(self, game_board):
         """
-        Choses a direction to move based on the position of the snake's head
-        and a list of squares to avoid
-        Inputs:
-            my_head   : A tuple including the coordinates of the snake's head
-            bad_coords: A list of squares in the board that should be avoided
-        Returns:
-            direction : The chosen direction to move [UP, DOWN, LEFT, RIGHT]
+        Builds a Grid representation of the board to be processed
+        by the pathfinding algorithm
+        RETURNS: an instance of Grid containing a 2D representation
+        of the board
         """
-        # Create a list that will contain all possible moves
-        possible_moves = []
+        # represent the board in a matrix
+        board_matrix = [[1 for y in range(self.board_height)]
+                        for x in range(self.board_width)]
+        # Populate the game board with cells to avoid
+        self.set_bad_coords(game_board, board_matrix)
 
-        # Determine direction of movement
-        # up
-        coord = (my_head[0], my_head[1] - 1)
-        if (self.is_coord_on_board(coord)) and (coord not in bad_coords):
-            possible_moves.append(Moves.UP)
-        # down
-        coord = (my_head[0], my_head[1] + 1)
-        if (self.is_coord_on_board(coord)) and (coord not in bad_coords):
-            possible_moves.append(Moves.DOWN)
-        # left
-        coord = (my_head[0] - 1, my_head[1])
-        if (self.is_coord_on_board(coord)) and (coord not in bad_coords):
-            possible_moves.append(Moves.LEFT)
-        # right
-        coord = (my_head[0] + 1, my_head[1])
-        if (self.is_coord_on_board(coord)) and (coord not in bad_coords):
-            possible_moves.append(Moves.RIGHT)
+        return Grid(matrix=board_matrix)
 
-        # possible moves
-        if len(possible_moves) > 0:
-            direction = random.choice(possible_moves)
+    def chose_direction(self, start_loc, path):
+        """
+        Determines the direction the snake should move based on the path found
+        RETURNS: a direction in Snake.Moves enumeration
+        """
+        # Check that the path has more than one step so we know we have not yet
+        # arrived to the destination. A path with only one step indicates that
+        # we are already located on the target destination
+        if len(path[0]) >= 2:
+            # the first element in the list is always the current location, so
+            # we take the second element, which represents the first move
+            # towards our target
+            move = path[0][1]
+            vector = (move[0] - start_loc[0], move[1] - start_loc[1])
+
+            if vector == (0, -1):
+                direction = Moves.UP
+            elif vector == (0, 1):
+                direction = Moves.DOWN
+            elif vector == (1, 0):
+                direction = Moves.RIGHT
+            else:
+                direction = Moves.LEFT
         else:
+            # TODO: Check the case when the target location is occupied
+            # by a snake. In this case, the path will be empty
+            # returning a random move for now
             direction = random.choice(list(Moves))
 
         return direction
+
+    def chose_target(self, data):
+        """
+        Determines the target cell the snake will attempt to move to
+        based on the board setup and snake strategy
+        RETURNS: a tuple containing the coordinates of the target
+        """
+        return random.choice([(14, 14), (0, 0), (0, 14), (14, 0)])
