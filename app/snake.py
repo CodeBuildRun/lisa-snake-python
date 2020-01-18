@@ -143,4 +143,11 @@ class Snake:
         based on the board setup and snake strategy
         RETURNS: a tuple containing the coordinates of the target
         """
-        return random.choice([(14, 14), (0, 0), (0, 14), (14, 0)])
+        # chose an apple
+        food = data["board"]["food"]
+        if len(food) > 0:
+            apple = food[0]
+            target = (apple["x"], apple["y"])
+        else:
+            target = random.choice([(14, 14), (0, 0), (0, 14), (14, 0)])
+        return target
