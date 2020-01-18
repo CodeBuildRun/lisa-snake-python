@@ -51,17 +51,12 @@ class Snake:
         start_loc = grid.node(my_head[0], my_head[1])
 
         # chose a target
-        for tries in range(4):
-            target = self.chose_target(data)
-            end_loc = grid.node(target[0], target[1])
-            print(target)
+        target = self.chose_target(data)
+        end_loc = grid.node(target[0], target[1])
+        print(target)
 
-            # find a path to the target
-            path = self.finder.find_path(start_loc, end_loc, grid)
-            if len(path[0]) >= 2:
-                break
-            else:
-                print("No PATH")
+        # find a path to the target
+        path = self.finder.find_path(start_loc, end_loc, grid)
 
         # Determine direction of movement
         direction = self.chose_direction(my_head, path)
