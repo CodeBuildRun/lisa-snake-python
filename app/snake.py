@@ -38,8 +38,6 @@ class Snake:
         """
         Move the snake to a chosen square
         """
-        # print(json.dumps(data))
-
         # Get the board's current state
         game_board = data["board"]
         # create a grid representation of the board
@@ -52,7 +50,6 @@ class Snake:
         # chose a target
         target = self.chose_target(data)
         end_loc = grid.node(target[0], target[1])
-        print(target)
 
         # find a path to the target
         path = self.finder.find_path(start_loc, end_loc, grid)
@@ -98,8 +95,8 @@ class Snake:
         of the board
         """
         # represent the board in a matrix
-        board_matrix = [[1 for y in range(self.board_height)]
-                        for x in range(self.board_width)]
+        board_matrix = [[1 for _ in range(self.board_height)]
+                        for _ in range(self.board_width)]
         # Populate the game board with cells to avoid
         self.set_bad_coords(game_board, board_matrix)
 
