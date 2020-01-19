@@ -70,6 +70,9 @@ class Snake:
         """
         Mark cells in the matrix that the snake needs to avoid
         """
+        # TODO: For enemies snake heads, invalidate squares in the
+        # head's immediate neighbourhood. This prevent us from moving to
+        # the same square the enemy snake choses to move to.
         for snake in game_board["snakes"]:
             for body_part in snake["body"]:
                 matrix[body_part["y"]][body_part["x"]] = 0
