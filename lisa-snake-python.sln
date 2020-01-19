@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.271
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "lisa-snake-python", "lisa-snake-python.pyproj", "{ABC63DD6-5E58-4093-9195-BA6C8BBEC1C1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ABC63DD6-5E58-4093-9195-BA6C8BBEC1C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABC63DD6-5E58-4093-9195-BA6C8BBEC1C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B1BDFB7D-9115-4E65-93BB-30D727B461E5}
+	EndGlobalSection
+EndGlobal
