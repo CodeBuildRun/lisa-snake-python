@@ -38,12 +38,15 @@ class Snake:
         """
         Move the snake to a chosen square
         """
+        # update snake status for this turn
+        snake_status = self.update_snake_status(data)
+
         # create a grid representation of the board
         grid = self.build_grid(data)
 
         # get coordinates of my snake head
-        my_head = self.get_snake_head(data)
-        start_loc = grid.node(my_head[0], my_head[1])
+        head_coords = snake_status["head"]
+        start_loc = grid.node(head_coords[0], head_coords[1])
 
         # chose a target
         target = self.chose_target(data)
@@ -51,34 +54,31 @@ class Snake:
 
         # find a path to the target
         path = self.finder.find_path(start_loc, end_loc, grid)
-        print(path)
 
         # Determine direction of movement
-        direction = self.chose_direction(my_head, path)
+        direction = self.chose_direction(snake_status["head"], path)
         return direction
 
-    def get_snake_head(self, data):
+    def update_snake_status(self, data):
         """
-        Get coordinates of the snake's head
+        Gather information about the snake, including
+        head and tail locations as well as health
         """
-        my_head_json = data["you"]["body"][0]
-        my_head = (my_head_json["x"], my_head_json["y"])
-        return my_head
-
-    def get_snake_tail(self, data):
-        """
-        Get coordinates of the snake's tail
-        """
-        my_tail_json = data["you"]["body"][-1]
-        my_tail = (my_tail_json["x"], my_tail_json["y"])
-        return my_tail
-
-    def get_snake_health(self, data):
-        """
-        Get coordinates of the snake's tail
-        """
-        my_health = data["you"]["health"]
-        return my_health
+        snake_status = {
+            "head": (0, 0),
+            "tail": (0, 0),
+            "health": 0
+        }
+        # Find head
+        snake_body = data["you"]["body"]
+        my_head = snake_body[0]
+        snake_status["head"] = (my_head["x"], my_head["y"])
+        # Find tail
+        my_tail = snake_body[-1]
+        snake_status["tail"] = (my_tail["x"], my_tail["y"])
+        # Get the snake's health
+        snake_status["health"] = data["you"]["health"]
+        return snake_status
 
     def set_bad_coords(self, data, matrix):
         """
@@ -94,7 +94,9 @@ class Snake:
             for body_part in snake["body"]:
                 matrix[body_part["y"]][body_part["x"]] = 0
 
-        tail = self.get_snake_tail(data)
+        # assumes snake status has been updated at the beginning of this turn
+        snake_status = self.update_snake_status(data)
+        tail = snake_status["tail"]
         matrix[tail[1]][tail[0]] = 1
 
     def is_coord_on_board(self, coord):
@@ -165,12 +167,13 @@ class Snake:
         based on the board setup and snake strategy
         RETURNS: a tuple containing the coordinates of the target
         """
-        # chose an apple
-        if data["turn"] < 10 or self.get_snake_health(data) < 50:
+        snake_status = self.update_snake_status(data)
+        if (data["turn"] < 10) or (snake_status["health"] < 50):
+            # chose an apple
             food = data["board"]["food"]
             apple = food[0]
             target = (apple["x"], apple["y"])
         else:
-            target = self.get_snake_tail(data)
-
+            # chase your tail
+            target = snake_status["tail"]
         return target
