@@ -38,10 +38,8 @@ class Snake:
         """
         Move the snake to a chosen square
         """
-        # Get the board's current state
-        game_board = data["board"]
         # create a grid representation of the board
-        grid = self.build_grid(game_board)
+        grid = self.build_grid(data)
 
         # get coordinates of my snake head
         my_head = self.get_snake_head(data)
@@ -72,7 +70,7 @@ class Snake:
         Get coordinates of the snake's tail
         """
         my_tail_json = data["you"]["body"][-1]
-        my_tail= (my_tail_json["x"], my_tail_json["y"])
+        my_tail = (my_tail_json["x"], my_tail_json["y"])
         return my_tail
 
     def get_snake_health(self, data):
@@ -82,16 +80,22 @@ class Snake:
         my_health = data["you"]["health"]
         return my_health
 
-    def set_bad_coords(self, game_board, matrix):
+    def set_bad_coords(self, data, matrix):
         """
         Mark cells in the matrix that the snake needs to avoid
         """
+        # Get the board's current state
+        game_board = data["board"]
+
         # TODO: For enemies snake heads, invalidate squares in the
         # head's immediate neighbourhood. This prevent us from moving to
         # the same square the enemy snake choses to move to.
         for snake in game_board["snakes"]:
             for body_part in snake["body"]:
                 matrix[body_part["y"]][body_part["x"]] = 0
+
+        tail = self.get_snake_tail(data)
+        matrix[tail[1]][tail[0]] = 1
 
     def is_coord_on_board(self, coord):
         """
@@ -106,7 +110,7 @@ class Snake:
 
         return on_board
 
-    def build_grid(self, game_board):
+    def build_grid(self, data):
         """
         Builds a Grid representation of the board to be processed
         by the pathfinding algorithm
@@ -117,7 +121,7 @@ class Snake:
         board_matrix = [[1 for _ in range(self.board_height)]
                         for _ in range(self.board_width)]
         # Populate the game board with cells to avoid
-        self.set_bad_coords(game_board, board_matrix)
+        self.set_bad_coords(data, board_matrix)
 
         return Grid(matrix=board_matrix)
 
@@ -143,7 +147,7 @@ class Snake:
                 direction = Moves.DOWN
             elif vector == (1, 0):
                 direction = Moves.RIGHT
-            elif vector == (-1,0):
+            elif vector == (-1, 0):
                 direction = Moves.LEFT
             else:
                 direction = random.choice(list(Moves))
@@ -162,16 +166,11 @@ class Snake:
         RETURNS: a tuple containing the coordinates of the target
         """
         # chose an apple
-        if data["turn"]<10 or self.get_snake_health(data)<50:
-       
+        if data["turn"] < 10 or self.get_snake_health(data) < 50:
             food = data["board"]["food"]
             apple = food[0]
             target = (apple["x"], apple["y"])
-
-
         else:
-            
             target = self.get_snake_tail(data)
-            
- 
+
         return target
