@@ -40,7 +40,9 @@ def start():
     initialize the snake state here using the
     request's data.
     """
-    color = snake.color()
+    data = bottle.request.json
+
+    color = snake.initialize(data)
     return start_response(color)
 
 

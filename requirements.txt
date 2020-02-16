@@ -1,4 +1,9 @@
 bottle
-gunicorn
 flake8
 pylint
+pathfinding
+
+# The following dependencies are required for deployment to Heroku
+gunicorn
+gevent
+greenlet

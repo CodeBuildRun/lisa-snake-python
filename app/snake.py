@@ -1,6 +1,8 @@
-import json
 import random
 from enum import Enum
+from pathfinding.core.grid import Grid
+from pathfinding.finder.a_star import AStarFinder
+from .behaviours import Behaviours
 
 
 class Moves(Enum):
@@ -16,74 +18,175 @@ class Snake:
 
     def __init__(self):
         """
-        Snake Constructor.
+        Snake Constructor
         Initializes stateful snake
         """
+        self.finder = AStarFinder()
+        self.behave = Behaviours()
 
-    def color(self):
+    def initialize(self, data):
+        """
+        Initializes stateful snake
+        """
+        # Get board information
+        game_board = data["board"]
+        # Determine board dimensions
+        self.board_width = game_board["width"]
+        self.board_height = game_board["height"]
+
         return Snake.snake_color
 
     def move(self, data):
+        """
+        Move the snake to a chosen square
+        """
+        # update snake status for this turn
+        snake_status = self.update_snake_status(data)
 
-        print(json.dumps(data))
+        # create a grid representation of the board
+        grid = self.build_grid(data)
 
-        # Get the board's current state
-        game_board = data["board"]
         # get coordinates of my snake head
-        my_head = data["you"]["body"][0]
-        my_head_x = my_head["x"]
-        my_head_y = my_head["y"]
+        head_coords = snake_status["head"]
+        start_loc = grid.node(head_coords[0], head_coords[1])
 
-        # Make a list of all the bad coordinates and try to avoid them
-        height = game_board["height"]
-        width = game_board["width"]
-        bad_coords = []
+        # chose a target
+        target = self.chose_target(data, grid)
+        end_loc = grid.node(target[0], target[1])
 
-        # Bad coordinates that my snake needs to avoid
-        # 1. above and below the board
-        for x in range(width):
-            bad = (x, -1)
-            bad_coords.append(bad)
-            bad = (x, height)
-            bad_coords.append(bad)
-
-        # 2. left and right to the board
-        for y in range(height):
-            bad = (-1, y)
-            bad_coords.append(bad)
-            bad = (width, y)
-            bad_coords.append(bad)
-
-        # 3. snake bodies on the board
-        for snake in game_board["snakes"]:
-            for body in snake["body"]:
-                bad = (body["x"], body["y"])
-                bad_coords.append(bad)
-
-        possible_moves = []
+        # find a path to the target
+        path = self.finder.find_path(start_loc, end_loc, grid)
 
         # Determine direction of movement
-        # up
-        coord = (my_head_x, my_head_y - 1)
-        if coord not in bad_coords:
-            possible_moves.append(Moves.UP)
-        # down
-        coord = (my_head_x, my_head_y + 1)
-        if coord not in bad_coords:
-            possible_moves.append(Moves.DOWN)
-        # left
-        coord = (my_head_x - 1, my_head_y)
-        if coord not in bad_coords:
-            possible_moves.append(Moves.LEFT)
-        # right
-        coord = (my_head_x + 1, my_head_y)
-        if coord not in bad_coords:
-            possible_moves.append(Moves.RIGHT)
+        direction = self.chose_direction(snake_status["head"], path)
+        return direction
 
-        # possible moves
-        if len(possible_moves) > 0:
-            direction = random.choice(possible_moves)
+    def update_snake_status(self, data):
+        """
+        Gather information about the snake, including
+        head and tail locations as well as health
+        """
+        snake_status = {
+            "head": (0, 0),
+            "tail": (0, 0),
+            "health": 0
+        }
+        # Find head
+        snake_body = data["you"]["body"]
+        my_head = snake_body[0]
+        snake_status["head"] = (my_head["x"], my_head["y"])
+        # Find tail
+        my_tail = snake_body[-1]
+        snake_status["tail"] = (my_tail["x"], my_tail["y"])
+        # Get the snake's health
+        snake_status["health"] = data["you"]["health"]
+        return snake_status
+
+    def set_bad_coords(self, data, matrix):
+        """
+        Mark cells in the matrix that the snake needs to avoid
+        """
+        # Get the board's current state
+        game_board = data["board"]
+
+        # TODO: For enemies snake heads, invalidate squares in the
+        # head's immediate neighbourhood. This prevent us from moving to
+        # the same square the enemy snake choses to move to.
+        for snake in game_board["snakes"]:
+            for body_part in snake["body"]:
+                matrix[body_part["y"]][body_part["x"]] = 0
+
+        # assumes snake status has been updated at the beginning of this turn
+        snake_status = self.update_snake_status(data)
+        tail = snake_status["tail"]
+        matrix[tail[1]][tail[0]] = 1
+
+    def is_coord_on_board(self, coord):
+        """
+        Determines if a given coordinate is on the board
+        RETURNS: True if coordinate is on the board, False otherwise
+        """
+        on_board = False
+
+        if (coord[0] >= 0 and coord[0] < self.board_width) and \
+           (coord[1] >= 0 and coord[1] < self.board_height):
+            on_board = True
+
+        return on_board
+
+    def build_grid(self, data):
+        """
+        Builds a Grid representation of the board to be processed
+        by the pathfinding algorithm
+        RETURNS: an instance of Grid containing a 2D representation
+        of the board
+        """
+        # represent the board in a matrix
+        board_matrix = [[1 for _ in range(self.board_height)]
+                        for _ in range(self.board_width)]
+        # Populate the game board with cells to avoid
+        self.set_bad_coords(data, board_matrix)
+
+        return Grid(matrix=board_matrix)
+
+    def chose_direction(self, start_loc, path):
+        """
+        Determines the direction the snake should move based on the path found
+        RETURNS: a direction in Snake.Moves enumeration
+        """
+        # Check that the path has more than one step so we know we have not yet
+        # arrived to the destination. A path with only one step indicates that
+        # we are already located on the target destination
+
+        if len(path[0]) >= 2:
+            # the first element in the list is always the current location, so
+            # we take the second element, which represents the first move
+            # towards our target
+            move = path[0][1]
+            vector = (move[0] - start_loc[0], move[1] - start_loc[1])
+
+            if vector == (0, -1):
+                direction = Moves.UP
+            elif vector == (0, 1):
+                direction = Moves.DOWN
+            elif vector == (1, 0):
+                direction = Moves.RIGHT
+            elif vector == (-1, 0):
+                direction = Moves.LEFT
+            else:
+                direction = random.choice(list(Moves))
         else:
+            # TODO: Check the case when the target location is occupied
+            # by a snake. In this case, the path will be empty
+            # returning a random move for now
             direction = random.choice(list(Moves))
 
         return direction
+
+    def chose_target(self, data, grid):
+        """
+        Determines the target cell the snake will attempt to move to
+        based on the board setup and snake strategy
+        RETURNS: a tuple containing the coordinates of the target
+        """
+        snake_status = self.update_snake_status(data)
+
+        target = None
+
+        if (data["turn"] < 10) or (snake_status["health"] < 50):
+            food = data["board"]["food"]
+            target = self.behave.feed(food, grid, snake_status, self.finder)
+
+        if target is None:
+            # find if there is a path to the tail
+            target = self.behave.chase_tail(grid, snake_status, self.finder)
+
+        if target is None:
+            target = self.behave.move_to_neighbour(grid, snake_status, self.finder)
+
+        if target is None:
+            # If all fails, the last resort is to try to chase the tail anyway
+            # and take the risk of colliding with it.
+            target = snake_status["tail"]
+
+        return target
