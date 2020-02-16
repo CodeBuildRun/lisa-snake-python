@@ -168,11 +168,17 @@ class Snake:
         RETURNS: a tuple containing the coordinates of the target
         """
         snake_status = self.update_snake_status(data)
+
         if (data["turn"] < 10) or (snake_status["health"] < 50):
-            # chose an apple
+            # sort all the apples by proximity in ascending order
+            head = snake_status["head"]
             food = data["board"]["food"]
-            apple = food[0]
-            target = (apple["x"], apple["y"])
+            closer_food = sorted(food, key=lambda apple:
+                                 abs(head[0] - apple['x']) +
+                                 abs(head[1] - apple['y']))
+            # chose the closest apple
+            chosen_apple = closer_food[0]
+            target = (chosen_apple["x"], chosen_apple["y"])
         else:
             # chase your tail
             target = snake_status["tail"]
