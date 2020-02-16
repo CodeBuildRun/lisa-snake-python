@@ -49,7 +49,7 @@ class Snake:
         start_loc = grid.node(head_coords[0], head_coords[1])
 
         # chose a target
-        target = self.chose_target(data)
+        target = self.chose_target(data, grid)
         end_loc = grid.node(target[0], target[1])
 
         # find a path to the target
@@ -161,7 +161,7 @@ class Snake:
 
         return direction
 
-    def chose_target(self, data):
+    def chose_target(self, data, grid):
         """
         Determines the target cell the snake will attempt to move to
         based on the board setup and snake strategy
@@ -169,17 +169,68 @@ class Snake:
         """
         snake_status = self.update_snake_status(data)
 
-        if (data["turn"] < 10) or (snake_status["health"] < 50):
-            # sort all the apples by proximity in ascending order
-            head = snake_status["head"]
+        head = snake_status["head"]
+        head_loc = grid.node(head[0], head[1])
+
+        tail = snake_status["tail"]
+        tail_loc = grid.node(tail[0], tail[1])
+        target = tail
+
+        if (data["turn"] < 10) or (snake_status["health"] < 40):
+            # find out where the food is as well as the snake's head and tail
             food = data["board"]["food"]
+
+            # sort the food by proximity to the snake
             closer_food = sorted(food, key=lambda apple:
                                  abs(head[0] - apple['x']) +
                                  abs(head[1] - apple['y']))
-            # chose the closest apple
-            chosen_apple = closer_food[0]
-            target = (chosen_apple["x"], chosen_apple["y"])
+            # chose the closest reachable apple
+            for chosen_apple in closer_food:
+                apple = (chosen_apple["x"], chosen_apple["y"])
+                apple_loc = grid.node(apple[0], apple[1])
+                # verify that a path to the chosen apple exists
+                path = self.finder.find_path(head_loc, apple_loc, grid)
+                grid.cleanup()
+                if len(path[0]) >= 2:
+                    print("Follow food")
+                    target = apple
+                    break
+            else:
+                # find if there is a path to the tail
+                path = self.finder.find_path(head_loc, tail_loc, grid)
+                grid.cleanup()
+
+                if len(path[0]) < 3:
+                    # the tail is not reachanble, find a reachable neighbour
+                    neighbours = self.finder.find_neighbors(grid, head_loc, diagonal_movement=None)
+                    for adjacent in neighbours:
+                        if adjacent.walkable is True:
+                            print("Follow neighbour")
+                            target = (adjacent.x, adjacent.y)
+                            break
+                else:
+                    target = (tail[0], tail[1])
+                    print("Follow tail")
         else:
-            # chase your tail
-            target = snake_status["tail"]
+            # find if there is a path to the tail
+            tail = snake_status["tail"]
+            tail_loc = grid.node(tail[0], tail[1])
+            path = self.finder.find_path(head_loc, tail_loc, grid)
+            grid.cleanup()
+
+            if len(path[0]) < 3:
+                # the tail is not reachanble, find a reachable neighbour
+                neighbours = self.finder.find_neighbors(grid, head_loc, diagonal_movement=None)
+                for adjacent in neighbours:
+                    if adjacent.walkable is True:
+                        print("Follow neighbour")
+                        target = (adjacent.x, adjacent.y)
+                        break
+            else:
+                tail = snake_status["tail"]
+                tail_loc = grid.node(tail[0], tail[1])
+                target = (tail[0], tail[1])
+                print("Follow tail")
+
+        print(target)
         return target
