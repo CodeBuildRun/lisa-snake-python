@@ -174,6 +174,8 @@ class Snake:
 
         tail = snake_status["tail"]
         tail_loc = grid.node(tail[0], tail[1])
+
+        # default target is the tail
         target = tail
 
         if (data["turn"] < 10) or (snake_status["health"] < 40):
@@ -195,26 +197,9 @@ class Snake:
                     print("Follow food")
                     target = apple
                     break
-            else:
-                # find if there is a path to the tail
-                path = self.finder.find_path(head_loc, tail_loc, grid)
-                grid.cleanup()
 
-                if len(path[0]) < 3:
-                    # the tail is not reachanble, find a reachable neighbour
-                    neighbours = self.finder.find_neighbors(grid, head_loc, diagonal_movement=None)
-                    for adjacent in neighbours:
-                        if adjacent.walkable is True:
-                            print("Follow neighbour")
-                            target = (adjacent.x, adjacent.y)
-                            break
-                else:
-                    target = (tail[0], tail[1])
-                    print("Follow tail")
-        else:
+        if target == tail:
             # find if there is a path to the tail
-            tail = snake_status["tail"]
-            tail_loc = grid.node(tail[0], tail[1])
             path = self.finder.find_path(head_loc, tail_loc, grid)
             grid.cleanup()
 
