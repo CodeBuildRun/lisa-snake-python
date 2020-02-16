@@ -2,6 +2,7 @@ import random
 from enum import Enum
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
+from .behaviours import Behaviours
 
 
 class Moves(Enum):
@@ -21,6 +22,7 @@ class Snake:
         Initializes stateful snake
         """
         self.finder = AStarFinder()
+        self.behave = Behaviours()
 
     def initialize(self, data):
         """
@@ -49,7 +51,7 @@ class Snake:
         start_loc = grid.node(head_coords[0], head_coords[1])
 
         # chose a target
-        target = self.chose_target(data)
+        target = self.chose_target(data, grid)
         end_loc = grid.node(target[0], target[1])
 
         # find a path to the target
@@ -161,7 +163,7 @@ class Snake:
 
         return direction
 
-    def chose_target(self, data):
+    def chose_target(self, data, grid):
         """
         Determines the target cell the snake will attempt to move to
         based on the board setup and snake strategy
@@ -169,17 +171,22 @@ class Snake:
         """
         snake_status = self.update_snake_status(data)
 
-        if (data["turn"] < 10) or (snake_status["health"] < 50):
-            # sort all the apples by proximity in ascending order
-            head = snake_status["head"]
+        target = None
+
+        if (data["turn"] < 10) or (snake_status["health"] < 40):
             food = data["board"]["food"]
-            closer_food = sorted(food, key=lambda apple:
-                                 abs(head[0] - apple['x']) +
-                                 abs(head[1] - apple['y']))
-            # chose the closest apple
-            chosen_apple = closer_food[0]
-            target = (chosen_apple["x"], chosen_apple["y"])
-        else:
-            # chase your tail
+            target = self.behave.feed(food, grid, snake_status, self.finder)
+
+        if target is None:
+            # find if there is a path to the tail
+            target = self.behave.chase_tail(grid, snake_status, self.finder)
+
+        if target is None:
+            target = self.behave.move_to_neighbour(grid, snake_status, self.finder)
+
+        if target is None:
+            # If all fails, the last resort is to try to chase the tail anyway
+            # and take the risk of colliding with it.
             target = snake_status["tail"]
+
         return target
