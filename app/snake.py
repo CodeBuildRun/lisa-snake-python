@@ -173,7 +173,7 @@ class Snake:
 
         target = None
 
-        if (data["turn"] < 10) or (snake_status["health"] < 40):
+        if (data["turn"] < 10) or (snake_status["health"] < 50):
             food = data["board"]["food"]
             target = self.behave.feed(food, grid, snake_status, self.finder)
 
