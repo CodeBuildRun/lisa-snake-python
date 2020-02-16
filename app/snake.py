@@ -2,6 +2,7 @@ import random
 from enum import Enum
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
+from .behaviours import Behaviours
 
 
 class Moves(Enum):
@@ -21,6 +22,7 @@ class Snake:
         Initializes stateful snake
         """
         self.finder = AStarFinder()
+        self.behave = Behaviours()
 
     def initialize(self, data):
         """
@@ -169,53 +171,22 @@ class Snake:
         """
         snake_status = self.update_snake_status(data)
 
-        head = snake_status["head"]
-        head_loc = grid.node(head[0], head[1])
-
-        tail = snake_status["tail"]
-        tail_loc = grid.node(tail[0], tail[1])
-
-        # default target is the tail
-        target = tail
+        target = None
 
         if (data["turn"] < 10) or (snake_status["health"] < 40):
-            # find out where the food is as well as the snake's head and tail
             food = data["board"]["food"]
+            target = self.behave.feed(food, grid, snake_status, self.finder)
 
-            # sort the food by proximity to the snake
-            closer_food = sorted(food, key=lambda apple:
-                                 abs(head[0] - apple['x']) +
-                                 abs(head[1] - apple['y']))
-            # chose the closest reachable apple
-            for chosen_apple in closer_food:
-                apple = (chosen_apple["x"], chosen_apple["y"])
-                apple_loc = grid.node(apple[0], apple[1])
-                # verify that a path to the chosen apple exists
-                path = self.finder.find_path(head_loc, apple_loc, grid)
-                grid.cleanup()
-                if len(path[0]) >= 2:
-                    print("Follow food")
-                    target = apple
-                    break
-
-        if target == tail:
+        if target is None:
             # find if there is a path to the tail
-            path = self.finder.find_path(head_loc, tail_loc, grid)
-            grid.cleanup()
+            target = self.behave.chase_tail(grid, snake_status, self.finder)
 
-            if len(path[0]) < 3:
-                # the tail is not reachanble, find a reachable neighbour
-                neighbours = self.finder.find_neighbors(grid, head_loc, diagonal_movement=None)
-                for adjacent in neighbours:
-                    if adjacent.walkable is True:
-                        print("Follow neighbour")
-                        target = (adjacent.x, adjacent.y)
-                        break
-            else:
-                tail = snake_status["tail"]
-                tail_loc = grid.node(tail[0], tail[1])
-                target = (tail[0], tail[1])
-                print("Follow tail")
+        if target is None:
+            target = self.behave.move_to_neighbour(grid, snake_status, self.finder)
 
-        print(target)
+        if target is None:
+            # If all fails, the last resort is to try to chase the tail anyway
+            # and take the risk of colliding with it.
+            target = snake_status["tail"]
+
         return target
