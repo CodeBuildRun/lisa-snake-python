@@ -16,7 +16,7 @@ class Behaviours:
         # sort the food by proximity to the snake
         closer_food = sorted(food, key=lambda apple:
                              abs(head[0] - apple['x']) + abs(head[1] - apple['y'])
-                             * self.assess_danger(grid, grid.node(apple['x'], apple['y']), finder))
+                             + (10 * self.assess_danger(grid, grid.node(apple['x'], apple['y']), finder)))
         # chose the closest reachable apple
         for chosen_apple in closer_food:
             apple = (chosen_apple["x"], chosen_apple["y"])
