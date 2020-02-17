@@ -59,7 +59,7 @@ class Behaviours:
         if len(path[0]) >= 2:
             next_move = path[0][1]
             next_node = grid.node(next_move[0], next_move[1])
-            if self.assess_danger(grid, next_node, finder) < 1:
+            if self.assess_danger(grid, next_node, finder) < 2:
                 target = tail
 
         return target
