@@ -33,6 +33,7 @@ class Snake:
         # Determine board dimensions
         self.board_width = game_board["width"]
         self.board_height = game_board["height"]
+        self.snake_id = data["you"]["id"]
 
         return Snake.snake_color
 
@@ -96,11 +97,6 @@ class Snake:
             for body_part in snake["body"]:
                 matrix[body_part["y"]][body_part["x"]] = 0
 
-        # assumes snake status has been updated at the beginning of this turn
-        snake_status = self.update_snake_status(data)
-        tail = snake_status["tail"]
-        matrix[tail[1]][tail[0]] = 1
-
     def is_coord_on_board(self, coord):
         """
         Determines if a given coordinate is on the board
@@ -156,9 +152,8 @@ class Snake:
             else:
                 direction = random.choice(list(Moves))
         else:
-            # TODO: Check the case when the target location is occupied
-            # by a snake. In this case, the path will be empty
-            # returning a random move for now
+            # if no path to the target exists (path= [])
+            # choose a random move
             direction = random.choice(list(Moves))
 
         return direction
@@ -173,7 +168,8 @@ class Snake:
 
         target = None
 
-        if (data["turn"] < 10) or (snake_status["health"] < 50):
+        snake_size = len(data["you"]["body"])
+        if (snake_size < 5 or snake_status["health"] < 50):
             food = data["board"]["food"]
             target = self.behave.feed(food, grid, snake_status, self.finder)
 

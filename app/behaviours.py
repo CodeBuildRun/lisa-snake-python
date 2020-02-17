@@ -48,8 +48,18 @@ class Behaviours:
         head = snake_status["head"]
         head_loc = grid.node(head[0], head[1])
 
+        # make the tail a walkable square so a path can be found
+        tail_loc.weight = 1
+        tail_loc.walkable = True
+
         # find if there is a path to the tail
         path = finder.find_path(head_loc, tail_loc, grid)
+
+        # Mark the tail back as avoidable
+        tail_loc.weight = 0
+        tail_loc.walkable = False
+
+        # restore the grid
         grid.cleanup()
 
         target = None
