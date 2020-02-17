@@ -54,8 +54,7 @@ class Behaviours:
 
         target = None
 
-        # if the tail is at least one square away from the head, then
-        # proceed with the move
+        # if there is a path to the tail, proceed with the move
         if len(path[0]) >= 2:
             next_move = path[0][1]
             next_node = grid.node(next_move[0], next_move[1])
