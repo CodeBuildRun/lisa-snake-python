@@ -40,7 +40,6 @@ class Snake:
         """
         Move the snake to a chosen square
         """
-        print(data["turn"])
         # update snake status for this turn
         snake_status = self.update_snake_status(data)
 
@@ -176,22 +175,16 @@ class Snake:
 
         if (data["turn"] < 10) or (snake_status["health"] < 50):
             food = data["board"]["food"]
-            print("Going for Food!")
             target = self.behave.feed(food, grid, snake_status, self.finder)
 
         if target is None:
-            if (snake_status["health"]) >= 50:
-                print("Not hungry")
-            print("going for my tail!")
             # find if there is a path to the tail
             target = self.behave.chase_tail(grid, snake_status, self.finder)
 
         if target is None:
-            print("Tail is too risky, going for a neighbour")
             target = self.behave.move_to_neighbour(grid, snake_status, self.finder)
 
         if target is None:
-            print("Neighbour is too dangerous, well, let's try the tail anyway")
             # If all fails, the last resort is to try to chase the tail anyway
             # and take the risk of colliding with it.
             target = snake_status["tail"]
