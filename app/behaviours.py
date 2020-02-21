@@ -16,7 +16,8 @@ class Behaviours:
         # sort the food by proximity to the snake
         closer_food = sorted(food, key=lambda apple:
                              abs(head[0] - apple['x']) + abs(head[1] - apple['y'])
-                             * self.assess_danger(grid, grid.node(apple['x'], apple['y']), finder))
+                             * 10 * self.assess_danger(grid, grid.node(apple['x'], apple['y']), finder))
+
         # chose the closest reachable apple
         for chosen_apple in closer_food:
             apple = (chosen_apple["x"], chosen_apple["y"])
@@ -48,29 +49,23 @@ class Behaviours:
         head = snake_status["head"]
         head_loc = grid.node(head[0], head[1])
 
-        # make the tail a walkable square so a path can be found
-        tail_loc.weight = 1
-        tail_loc.walkable = True
-
-        # find if there is a path to the tail
-        path = finder.find_path(head_loc, tail_loc, grid)
-
-        # Mark the tail back as avoidable
-        tail_loc.weight = 0
-        tail_loc.walkable = False
-
-        # restore the grid
-        grid.cleanup()
-
         target = None
 
-        # if the tail is at least one square away from the head, then
-        # proceed with the move
-        if len(path[0]) >= 2:
-            next_move = path[0][1]
-            next_node = grid.node(next_move[0], next_move[1])
-            if self.assess_danger(grid, next_node, finder) < 1:
-                target = tail
+        tail_perimeter = finder.find_neighbors(grid, tail_loc, diagonal_movement=None)
+        tail_sorted = sorted(tail_perimeter, key=lambda tail: self.assess_danger(grid, tail, finder))
+
+        # find if there is a path to the tail
+        for tail_node in tail_sorted:
+            path = finder.find_path(head_loc, tail_node, grid)
+            # restore the grid
+            grid.cleanup()
+
+            if len(path[0]) >= 2:
+                next_move = path[0][1]
+                next_node = grid.node(next_move[0], next_move[1])
+                if self.assess_danger(grid, next_node, finder) < 1:
+                    target = tail
+                    break
 
         return target
 
