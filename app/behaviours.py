@@ -15,9 +15,7 @@ class Behaviours:
 
         # sort the food by proximity to the snake
         closer_food = sorted(food, key=lambda apple:
-                             abs(head[0] - apple['x']) + abs(head[1] - apple['y'])
-                             * 10 * self.assess_danger(grid, grid.node(apple['x'], apple['y']), finder))
-
+                             abs(head[0] - apple['x']) + abs(head[1] - apple['y']))
         # chose the closest reachable apple
         for chosen_apple in closer_food:
             apple = (chosen_apple["x"], chosen_apple["y"])
@@ -28,8 +26,10 @@ class Behaviours:
             grid.cleanup()
 
             if len(path[0]) >= 2:
-                target = apple
-                break
+                danger = self.assess_danger(grid, apple_loc, finder)
+                if danger <= 1:
+                    target = apple
+                    break
 
         return target
 
@@ -49,23 +49,19 @@ class Behaviours:
         head = snake_status["head"]
         head_loc = grid.node(head[0], head[1])
 
+        # find if there is a path to the tail
+        path = finder.find_path(head_loc, tail_loc, grid)
+        grid.cleanup()
+
         target = None
 
-        tail_perimeter = finder.find_neighbors(grid, tail_loc, diagonal_movement=None)
-        tail_sorted = sorted(tail_perimeter, key=lambda tail: self.assess_danger(grid, tail, finder))
-
-        # find if there is a path to the tail
-        for tail_node in tail_sorted:
-            path = finder.find_path(head_loc, tail_node, grid)
-            # restore the grid
-            grid.cleanup()
-
-            if len(path[0]) >= 2:
-                next_move = path[0][1]
-                next_node = grid.node(next_move[0], next_move[1])
-                if self.assess_danger(grid, next_node, finder) < 1:
-                    target = tail
-                    break
+        # if the tail is at least one square away from the head, then
+        # proceed with the move
+        if len(path[0]) >= 2:
+            next_move = path[0][1]
+            next_node = grid.node(next_move[0], next_move[1])
+            if self.assess_danger(grid, next_node, finder) < 1:
+                target = tail
 
         return target
 
