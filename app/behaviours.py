@@ -122,3 +122,28 @@ class Behaviours:
         path, length = self.path_to_tail(head_loc, snake_status, grid, finder)
 
         return path, length
+
+    def chase_other_tail(self, grid, data, snake_status, finder):
+        head = snake_status["head"]
+        head_loc = grid.node(head[0], head[1])
+
+        my_snake_id = data["you"]["id"]
+
+        snakes = data["board"]["snakes"]
+        target = None
+        target_path = []
+
+        for snake in snakes:
+            snake_id = snake["id"]
+            if snake_id != my_snake_id:
+                tail = snake["body"][-1]
+                tail_loc = grid.node(tail["x"], tail["y"])
+                tail_perimeter = finder.find_neighbors(grid, tail_loc, diagonal_movement=None)
+                for tail_neighbour in tail_perimeter:
+                    path = finder.find_path(head_loc, tail_neighbour, grid)
+                    grid.cleanup()
+                    if len(path[0]) >= 2:
+                        target = tail
+                        target_path = path[0]
+                        break
+        return target, target_path
