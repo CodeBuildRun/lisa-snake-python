@@ -160,7 +160,7 @@ class Snake:
         target = None
 
         snake_size = len(data["you"]["body"])
-        if (snake_size < 4 or snake_status["health"] < 50):
+        if (snake_size < 5 or snake_status["health"] < 50):
             food = data["board"]["food"]
             target, path = self.behave.feed(food, grid, snake_status, self.finder)
 
