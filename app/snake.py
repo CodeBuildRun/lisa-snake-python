@@ -165,10 +165,6 @@ class Snake:
             target, path = self.behave.feed(food, grid, snake_status, self.finder)
 
         if target is None:
-            target, path = self.behave.chase_other_tail(grid, data, snake_status, self.finder)
-            print("Cahsing -> " + str(target))
-
-        if target is None:
             # find if there is a path to the tail
             target, path = self.behave.chase_tail(grid, snake_status, self.finder)
 
