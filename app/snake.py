@@ -33,6 +33,7 @@ class Snake:
         # Determine board dimensions
         self.board_width = game_board["width"]
         self.board_height = game_board["height"]
+        self.snake_id = data["you"]["id"]
 
         return Snake.snake_color
 
@@ -46,16 +47,8 @@ class Snake:
         # create a grid representation of the board
         grid = self.build_grid(data)
 
-        # get coordinates of my snake head
-        head_coords = snake_status["head"]
-        start_loc = grid.node(head_coords[0], head_coords[1])
-
         # chose a target
-        target = self.chose_target(data, grid)
-        end_loc = grid.node(target[0], target[1])
-
-        # find a path to the target
-        path = self.finder.find_path(start_loc, end_loc, grid)
+        target, path = self.chose_target(data, grid)
 
         # Determine direction of movement
         direction = self.chose_direction(snake_status["head"], path)
@@ -96,11 +89,6 @@ class Snake:
             for body_part in snake["body"]:
                 matrix[body_part["y"]][body_part["x"]] = 0
 
-        # assumes snake status has been updated at the beginning of this turn
-        snake_status = self.update_snake_status(data)
-        tail = snake_status["tail"]
-        matrix[tail[1]][tail[0]] = 1
-
     def is_coord_on_board(self, coord):
         """
         Determines if a given coordinate is on the board
@@ -137,12 +125,11 @@ class Snake:
         # Check that the path has more than one step so we know we have not yet
         # arrived to the destination. A path with only one step indicates that
         # we are already located on the target destination
-
-        if len(path[0]) >= 2:
+        if len(path) >= 2:
             # the first element in the list is always the current location, so
             # we take the second element, which represents the first move
             # towards our target
-            move = path[0][1]
+            move = path[1]
             vector = (move[0] - start_loc[0], move[1] - start_loc[1])
 
             if vector == (0, -1):
@@ -156,9 +143,8 @@ class Snake:
             else:
                 direction = random.choice(list(Moves))
         else:
-            # TODO: Check the case when the target location is occupied
-            # by a snake. In this case, the path will be empty
-            # returning a random move for now
+            # if no path to the target exists (path= [])
+            # choose a random move
             direction = random.choice(list(Moves))
 
         return direction
@@ -173,20 +159,22 @@ class Snake:
 
         target = None
 
-        if (data["turn"] < 10) or (snake_status["health"] < 50):
+        snake_size = len(data["you"]["body"])
+        if (snake_size < 5 or snake_status["health"] < 50):
             food = data["board"]["food"]
-            target = self.behave.feed(food, grid, snake_status, self.finder)
+            target, path = self.behave.feed(food, grid, snake_status, self.finder)
 
         if target is None:
             # find if there is a path to the tail
-            target = self.behave.chase_tail(grid, snake_status, self.finder)
+            target, path = self.behave.chase_tail(grid, snake_status, self.finder)
 
         if target is None:
-            target = self.behave.move_to_neighbour(grid, snake_status, self.finder)
+            target, path = self.behave.move_to_neighbour(grid, snake_status, self.finder)
 
         if target is None:
             # If all fails, the last resort is to try to chase the tail anyway
             # and take the risk of colliding with it.
-            target = snake_status["tail"]
+            tail_path, length = self.behave.head_to_tail(snake_status, grid, self.finder)
+            path = tail_path[0]
 
-        return target
+        return target, path
