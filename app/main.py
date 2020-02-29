@@ -40,10 +40,11 @@ def start():
     initialize the snake state here using the
     request's data.
     """
-    data = bottle.request.json
 
-    color = snake.initialize(data)
-    return start_response(color)
+    data = bottle.request.json
+    snake.initialize(data)
+    color, headType, tailType = snake.apperance()
+    return start_response(color, headType, tailType)
 
 
 @bottle.post('/move')
