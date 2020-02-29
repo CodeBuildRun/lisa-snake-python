@@ -41,7 +41,7 @@ class Snake:
         """
         Move the snake to a chosen square
         """
-        self.initialize()
+        self.initialize(data)
 
         # update snake status for this turn
         snake_status = self.update_snake_status(data)
