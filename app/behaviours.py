@@ -16,7 +16,9 @@ class Behaviours:
 
         # sort the food by proximity to the snake
         closer_food = sorted(food, key=lambda apple:
-                             abs(head[0] - apple['x']) + abs(head[1] - apple['y']))
+                             abs(head[0] - apple['x']) + abs(head[1] - apple['y']) *
+                             self.assess_weighted_danger(grid, grid.node(apple['x'], apple['y']), snake_status, finder))
+        print(closer_food)
         # chose the closest reachable apple
         for chosen_apple in closer_food:
             apple = (chosen_apple["x"], chosen_apple["y"])
@@ -27,8 +29,12 @@ class Behaviours:
             grid.cleanup()
 
             if len(path[0]) >= 2:
-                danger = self.assess_danger(grid, apple_loc, snake_status, finder)
-                if danger <= 2:
+                next = path[0][1]
+                next_node = grid.node(next[0], next[1])
+
+                danger = self.assess_weighted_danger(grid, next_node, snake_status, finder)
+                print(danger)
+                if danger < 100:
                     target = apple
                     food_path = path[0]
                     break
@@ -97,6 +103,17 @@ class Behaviours:
         path, length = self.path_to_tail(node, snake_status, grid, finder)
         if (length <= 1):
             danger_score = danger_score + 100
+        return danger_score
+
+    def assess_weighted_danger(self, grid, node, snake_status, finder):
+        neighbours = finder.find_neighbors(grid, node, diagonal_movement=None)
+        danger_score = 0
+        for n in neighbours:
+            danger_score = danger_score + n.weight
+
+        path, length = self.path_to_tail(node, snake_status, grid, finder)
+        if (length <= 1):
+            danger_score = danger_score + 500
         return danger_score
 
     def path_to_tail(self, origin, snake_status, grid, finder):

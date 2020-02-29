@@ -33,7 +33,6 @@ class Snake:
         # Determine board dimensions
         self.board_width = game_board["width"]
         self.board_height = game_board["height"]
-        self.snake_id = data["you"]["id"]
 
         return Snake.snake_color
 
@@ -47,7 +46,7 @@ class Snake:
         snake_status = self.update_snake_status(data)
 
         # create a grid representation of the board
-        grid = self.build_grid(data)
+        grid = self.build_grid(data, snake_status)
 
         # chose a target
         target, path = self.chose_target(data, grid)
@@ -84,12 +83,26 @@ class Snake:
         # Get the board's current state
         game_board = data["board"]
 
-        # TODO: For enemies snake heads, invalidate squares in the
-        # head's immediate neighbourhood. This prevent us from moving to
-        # the same square the enemy snake choses to move to.
         for snake in game_board["snakes"]:
             for body_part in snake["body"]:
-                matrix[body_part["y"]][body_part["x"]] = 0
+                body_node = matrix.node(body_part["x"], body_part["y"])
+                body_node.weight = 0
+                body_node.walkable = False
+
+        self.assign_weights(data, matrix)
+
+    def assign_weights(self, data, grid):
+        # Get the board's current state
+        game_board = data["board"]
+        snake_id = data["you"]["id"]
+
+        for snake in game_board["snakes"]:
+            if snake["id"] != snake_id:
+                snake_head = snake["body"][0]
+                snake_head_node = grid.node(snake_head["x"], snake_head["y"])
+                neighbours = self.finder.find_neighbors(grid, snake_head_node, diagonal_movement=None)
+                for n in neighbours:
+                    n.weight = 100
 
     def is_coord_on_board(self, coord):
         """
@@ -104,7 +117,7 @@ class Snake:
 
         return on_board
 
-    def build_grid(self, data):
+    def build_grid(self, data, snake_status):
         """
         Builds a Grid representation of the board to be processed
         by the pathfinding algorithm
@@ -114,10 +127,12 @@ class Snake:
         # represent the board in a matrix
         board_matrix = [[1 for _ in range(self.board_height)]
                         for _ in range(self.board_width)]
-        # Populate the game board with cells to avoid
-        self.set_bad_coords(data, board_matrix)
 
-        return Grid(matrix=board_matrix)
+        grid = Grid(matrix=board_matrix)
+
+        # Populate the game board with cells to avoid
+        self.set_bad_coords(data, grid)
+        return grid
 
     def chose_direction(self, start_loc, path):
         """
