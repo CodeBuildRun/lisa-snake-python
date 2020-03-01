@@ -84,7 +84,8 @@ class Behaviours:
         # Find the first walkable neighbour
         neighbours = finder.find_neighbors(grid, head_loc, diagonal_movement=None)
         if len(neighbours) > 0:
-            danger_sort = sorted(neighbours, key=lambda node: self.assess_danger(grid, node, snake_status, finder))
+            danger_sort = sorted(neighbours,
+                                 key=lambda node: self.assess_weighted_danger(grid, node, snake_status, finder))
             adjacent = danger_sort[0]
             target = (adjacent.x, adjacent.y)
             path_found = finder.find_path(head_loc, adjacent, grid)
@@ -147,7 +148,7 @@ class Behaviours:
             accumulation = accumulation + len(snake["body"])
             snake_count = snake_count + 1
 
-        desired_size = accumulation/snake_count
+        desired_size = (accumulation/snake_count) + 1
         if desired_size < 5:
             desired_size = 5
 
