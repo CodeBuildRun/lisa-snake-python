@@ -62,7 +62,7 @@ class Behaviours:
         if path_length >= 2:
             next_move = path[0][1]
             next_node = grid.node(next_move[0], next_move[1])
-            danger = self.assess_danger(grid, next_node, snake_status, finder)
+            danger = self.assess_weighted_danger(grid, next_node, snake_status, finder)
             if danger <= 2:
                 target = snake_status["tail"]
 
@@ -148,7 +148,6 @@ class Behaviours:
             snake_count = snake_count + 1
 
         desired_size = accumulation/snake_count
-        print(desired_size)
         if desired_size < 5:
             desired_size = 5
 

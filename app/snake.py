@@ -97,14 +97,18 @@ class Snake:
         # Get the board's current state
         game_board = data["board"]
         snake_id = data["you"]["id"]
+        my_len = len(data["you"]["body"])
 
         for snake in game_board["snakes"]:
             if snake["id"] != snake_id:
                 snake_head = snake["body"][0]
-                snake_head_node = grid.node(snake_head["x"], snake_head["y"])
-                neighbours = self.finder.find_neighbors(grid, snake_head_node, diagonal_movement=None)
-                for n in neighbours:
-                    n.weight = 100
+                snake_len = len(snake["body"])
+
+                if my_len <= snake_len:
+                    snake_head_node = grid.node(snake_head["x"], snake_head["y"])
+                    neighbours = self.finder.find_neighbors(grid, snake_head_node, diagonal_movement=None)
+                    for n in neighbours:
+                        n.weight = 100
 
     def is_coord_on_board(self, coord):
         """
