@@ -14,8 +14,7 @@ class Moves(Enum):
 
 class Snake:
 
-    snake_color = "#00FF00"
-
+    
     def __init__(self):
         """
         Snake Constructor
@@ -34,7 +33,13 @@ class Snake:
         self.board_width = game_board["width"]
         self.board_height = game_board["height"]
 
-        return Snake.snake_color
+    def apperance(self):
+        color="#ff00ff"
+        headType="silly"
+        tailType="skinny"
+        return color, headType, tailType
+
+
 
     def move(self, data):
         """
