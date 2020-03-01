@@ -137,3 +137,19 @@ class Behaviours:
         path, length = self.path_to_tail(head_loc, snake_status, grid, finder)
 
         return path, length
+
+    def calculate_desired_size(self, data):
+        accumulation = 0
+        snake_count = 0
+        game_board = data["board"]
+
+        for snake in game_board["snakes"]:
+            accumulation = accumulation + len(snake["body"])
+            snake_count = snake_count + 1
+
+        desired_size = accumulation/snake_count
+        print(desired_size)
+        if desired_size < 5:
+            desired_size = 5
+
+        return desired_size
